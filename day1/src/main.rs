@@ -9,8 +9,6 @@ fn main() {
     // The [vector index + 1] will denote the "name" of the elf.
     // Example:- If we want the number of calories carried by Elf 5, we will get elf_total_calories[4]
     let mut elf_total_calories: Vec<i32> = vec![];
-    let mut elf_count = 0;
-
     // Input file reader
     let input_file_handle = File::open("input.txt").expect("Failed to read input file");
     let input_file_lines = BufReader::new(input_file_handle).lines();
@@ -19,8 +17,6 @@ fn main() {
 
     env_logger::init();
     info!(" Begin calorie computation!");
-
-    let mut max_calorie_count = 0;
 
     // Go through each line of the input
     for input_line_result in input_file_lines {
@@ -37,16 +33,9 @@ fn main() {
                 );
                 elf_total_calories.push(current_elf_calorie_count);
 
-                // Check if this is the elf carrying the most calories
-                if current_elf_calorie_count > max_calorie_count {
-                    max_calorie_count = current_elf_calorie_count;
-                }
-
                 // Reset the count so that we can start counting calories for the next elf.
                 info!("Resetting calorie counts to zero");
                 current_elf_calorie_count = 0;
-
-                elf_count += 1;
 
                 // Read next line from input file
                 continue;
@@ -70,7 +59,7 @@ fn main() {
         }
     } //for loop
 
-    // Handle edge case, where the last line of the input is not a blank line.
+    // Handle scenario where the last line of the input is not a blank line.
     // Add total calories for the last elf to the vector
     if current_elf_calorie_count > 0 {
         info!(
@@ -78,12 +67,29 @@ fn main() {
             current_elf_calorie_count
         );
         elf_total_calories.push(current_elf_calorie_count);
-        elf_count += 1;
     }
 
-    println!("Total Elves {}", elf_count);
+    // Sort the vector in reverse order
+    // https://doc.rust-lang.org/std/vec/struct.Vec.html#examples-153
+    elf_total_calories.sort_by(|a, b| b.cmp(a));
+
+    // Solution to Part 1
     println!(
-        "The elf carrying the most calories is carrying {} calories",
-        max_calorie_count
+        "Find the Elf carrying the most Calories. How many total Calories is that Elf carrying? Answer = {} calories",
+        elf_total_calories[0]
+    );
+
+    // Solution to Part 2
+    // To find the total calories carried out by the three elves carrying them,
+    // let's sort the vector and sum the last three values
+
+    info!(
+        "Last three values in order {} {} {}",
+        elf_total_calories[0], elf_total_calories[1], elf_total_calories[2]
+    );
+    let result = elf_total_calories[0] + elf_total_calories[1] + elf_total_calories[2];
+    println!(
+        "How many Calories are those Elves carrying in total? Answer = {} calories",
+        result
     );
 }
