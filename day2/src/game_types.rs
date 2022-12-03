@@ -4,19 +4,21 @@ pub trait PointSystem {
     fn get_points(&self) -> i32;
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum GameResult {
     Win,
     Loss,
     Draw,
+    Wtf,
 }
 
 impl PointSystem for GameResult {
     fn get_points(&self) -> i32 {
-        match &self {
+        match self {
             Self::Win => return 6,
             Self::Loss => return 0,
             Self::Draw => return 3,
+            Self::Wtf => return -1,
         }
     }
 }

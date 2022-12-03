@@ -18,11 +18,12 @@ fn main() {
     let input_file_handle = File::open("input.txt").expect("Unable to open input file!");
     let input_file_lines = BufReader::new(input_file_handle).lines();
 
-    let mut total_score = 0;
+    let mut total_score_part1 = 0;
+    let mut total_score_part2 = 0;
 
     for input_file_line in input_file_lines {
         if let Ok(current_line) = input_file_line {
-            trace!("--");
+            debug!("--");
             trace!("Current line is {}", current_line);
 
             let coded_moves: Vec<&str> = current_line.split(" ").collect();
@@ -31,30 +32,47 @@ fn main() {
             let coded_our_move = coded_moves[1];
 
             debug!(
-                "Coded Opponent move {} | Coded Our Move {}",
-                coded_opponent_move, coded_our_move
+                "Coded Our move {} | Coded Opponent Move {}",
+                coded_our_move, coded_opponent_move
             );
 
             let our_move: GameMove = interpret_move(coded_our_move);
             let opponent_move: GameMove = interpret_move(coded_opponent_move);
 
             debug!(
-                "Opponent move {:?} | Our Move {:?}",
-                opponent_move, our_move
+                "Our move {:?} | Opponent Move {:?}",
+                our_move, opponent_move
             );
 
-            let game_result = decide_game_result(our_move, opponent_move).unwrap();
+            let game_result = decide_game_result(our_move, opponent_move);
 
-            total_score += our_move.get_points();
-            total_score += game_result.get_points();
+            total_score_part1 += our_move.get_points();
+            total_score_part1 += game_result.get_points();
 
-            trace!("Game Result: {:?} | Score Added: {} + {}",game_result,our_move.get_points(),game_result.get_points());
-            debug!("Total Score: {}",total_score);
+            debug!("Game Result: {:?}", game_result);
+            trace!(
+                "Game Result: {:?} | Score Added: {} + {}",
+                game_result,
+                our_move.get_points(),
+                game_result.get_points()
+            );
+            debug!("Total Score: {}", total_score_part1);
+
+            // -- Below code strictly for Part 2
+            let desired_result: GameResult = interpret_coded_desired_result(coded_our_move);
+            let ideal_move = get_move_for_desired_result(opponent_move, desired_result);
+            total_score_part2 += ideal_move.get_points();
+            total_score_part2 += desired_result.get_points();
+
             trace!("--");
         } else {
             panic!("Cannot read the current line! Exiting!");
         }
     }
+
+    println!("Part 1 Solution aka Total Score: {}", total_score_part1);
+    println!("Part 2 Solution aka Total Score: {}", total_score_part2);
+
 }
 
 fn interpret_move(coded_move: &str) -> GameMove {
@@ -66,31 +84,60 @@ fn interpret_move(coded_move: &str) -> GameMove {
     }
 }
 
-fn decide_game_result(our_move: GameMove, opponent_move: GameMove) -> Option<GameResult> {
+fn decide_game_result(our_move: GameMove, opponent_move: GameMove) -> GameResult {
     if our_move == opponent_move {
-        return Option::Some(GameResult::Draw);
+        return GameResult::Draw;
     }
 
-    if our_move == GameMove::Rock {
-        if opponent_move == GameMove::Scissors {
-            return Option::Some(GameResult::Win);
+    if our_move == GameMove::Rock && opponent_move == GameMove::Scissors {
+        return GameResult::Win;
+    }
+
+    if our_move == GameMove::Paper && opponent_move == GameMove::Rock {
+        return GameResult::Win;
+    }
+
+    if our_move == GameMove::Scissors && opponent_move == GameMove::Paper {
+        return GameResult::Win;
+    }
+
+    GameResult::Loss
+}
+
+// Below functions for part 2 solution
+
+fn interpret_coded_desired_result(coded_desired_result: &str) -> GameResult {
+    match coded_desired_result {
+        "Y" => return GameResult::Draw,
+        "X" => return GameResult::Loss,
+        "Z" => return GameResult::Win,
+        _ => return GameResult::Wtf,
+    }
+}
+
+/// Get the move we need to make in order to achieve the desired result, given opponent move
+fn get_move_for_desired_result(opponent_move: GameMove, desired_result: GameResult) -> GameMove {
+    if desired_result == GameResult::Draw {
+        return opponent_move;
+    }
+
+    if desired_result == GameResult::Win {
+        match opponent_move {
+            GameMove::Rock => return GameMove::Paper,
+            GameMove::Paper => return GameMove::Scissors,
+            GameMove::Scissors => return GameMove::Rock,
+            _ => return GameMove::Spock,
         }
-        return Option::Some(GameResult::Loss);
     }
 
-    if our_move == GameMove::Paper {
-        if opponent_move == GameMove::Rock {
-            return Option::Some(GameResult::Win);
+    if desired_result == GameResult::Loss {
+        match opponent_move {
+            GameMove::Rock => return GameMove::Scissors,
+            GameMove::Paper => return GameMove::Rock,
+            GameMove::Scissors => return GameMove::Paper,
+            _ => return GameMove::Spock,
         }
-        return Option::Some(GameResult::Loss);
     }
 
-    if our_move == GameMove::Scissors {
-        if opponent_move == GameMove::Paper {
-            return Option::Some(GameResult::Win);
-        }
-        return Option::Some(GameResult::Loss);
-    }
-
-    return None;
+    return GameMove::Spock;
 }
