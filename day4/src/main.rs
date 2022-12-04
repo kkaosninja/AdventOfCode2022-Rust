@@ -76,8 +76,8 @@ fn main() {
         }
     }
 
-    println!("No. of contained pairs: {}", contained_pairs_count);
-    println!("No. of overlapping pairs: {}", overlap_pairs_count);
+    println!("Part 1 | In how many assignment pairs does one range fully contain the other?\nAnswer: {}", contained_pairs_count);
+    println!("Part 2 | In how many assignment pairs do the ranges overlap?\nAnswer: {}", overlap_pairs_count);
 }
 
 fn get_assignment_range(range_str: &str) -> (i32, i32) {
