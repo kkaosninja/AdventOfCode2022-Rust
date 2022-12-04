@@ -69,12 +69,94 @@ fn main() {
         }
     } // for loop
 
-    println!("Sum of Prioritues: {}", sum_of_priorities);
+    debug!("Beginning Part 2 Solution");
+
+    /* Below code strictly for Part 2 Solution */
+    let mut sum_of_group_priorities = 0;
+
+    let mut input_file_reader =
+        BufReader::new(File::open("input.txt").expect("Could not open input file!"));
+
+    loop {
+        let mut first_line = String::new();
+        let mut second_line = String::new();
+        let mut third_line = String::new();
+
+        // Read the three lines at once into strings.
+        // Input file line count should be a multiple of three.
+        // So we shouldn't have any problem
+
+        let mut line_read_result = input_file_reader.read_line(&mut first_line);
+        if line_read_result.unwrap() == 0 {
+            debug!("EOF reached when reading first line of group. Exiting");
+            break;
+        }
+
+        line_read_result = input_file_reader.read_line(&mut second_line);
+        if line_read_result.unwrap() == 0 {
+            debug!("EOF reached when reading second line of group. Exiting");
+            break;
+        }
+
+        line_read_result = input_file_reader.read_line(&mut third_line);
+        if line_read_result.unwrap() == 0 {
+            debug!("EOF reached when reading third line of group. Exiting");
+            break;
+        }
+
+        trace!("Line 1: {}", first_line);
+        trace!("Line 2: {}", second_line);
+        trace!("Line 3: {}", third_line);
+
+        // Break first line into characters aka items. Read them all into the hashset.
+        //NOTE:- Don't forget to strip the newline chars. They are included when reading
+        let mut first_line_set: HashSet<char> = HashSet::new();
+        for first_line_char in first_line.trim().chars() {
+            first_line_set.insert(first_line_char);
+        }
+
+        let mut second_line_set: HashSet<char> = HashSet::new();
+        for second_line_char in second_line.trim().chars() {
+            second_line_set.insert(second_line_char);
+        }
+
+        // Now we check how many items are common between first and second item sets
+
+        let mut common_items: HashSet<char> = HashSet::new();
+        for common_item in first_line_set.intersection(&second_line_set) {
+            common_items.insert(common_item.clone());
+        }
+
+        //Read in items for third line
+        let mut third_line_set: HashSet<char> = HashSet::new();
+        for third_line_char in third_line.trim().chars() {
+            third_line_set.insert(third_line_char);
+        }
+
+        // Now we find out items common to all three lines
+        // From the examples, its just one item
+        let mut common_items_all: HashSet<char> = HashSet::new();
+        for common_item in third_line_set.intersection(&common_items) {
+            common_items_all.insert(common_item.clone());
+        }
+
+        for item in common_items_all {
+            sum_of_group_priorities += get_priority(item);
+        }
+    }
+
+    println!("Part 1 - Sum of Prioritues: {}", sum_of_priorities);
+    println!(
+        "Part 2 - Sum of Group Priorities: {}",
+        sum_of_group_priorities
+    );
 }
 
 fn get_priority(input: char) -> i32 {
     let lowercase_base_priority = 1;
     let uppercase_base_priority = 27;
+
+    debug!("Input char is {}", input);
 
     //Handle lowercase
     if input.is_lowercase() {
