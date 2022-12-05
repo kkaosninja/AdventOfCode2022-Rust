@@ -8,7 +8,6 @@ use log::trace;
 
 pub fn get_num_of_stacks(input_file_name: &str) -> i32 {
     //Let's count the size of the stacks while we are at it.
-    // let mut stack_size = 0;
 
     let input_file_lines =
         BufReader::new(File::open(input_file_name).expect("Could not open input file!")).lines();
@@ -23,7 +22,6 @@ pub fn get_num_of_stacks(input_file_name: &str) -> i32 {
                 trace!("Stack numbers line found: {}", current_line);
                 return current_line.split_whitespace().collect::<Vec<&str>>().len() as i32;
             } else {
-                // stack_size += 1;
                 continue;
             }
         } else {
@@ -107,12 +105,55 @@ pub fn move_crates(
             .pop_back()
             .unwrap();
 
+        trace!(
+            "Moving crate {} from stack {} to stack {}",
+            popped_crate,
+            source_stack_index,
+            dest_stack_index
+        );
+
         stacks_vector
             .get_mut(dest_stack_index - 1)
             .unwrap()
             .push_back(popped_crate);
 
         move_count -= 1;
+    }
+}
+
+/// To help move multiple crates at once with the CrateMover 9001!
+pub fn move_crates_part2(
+    stacks_vector: &mut Vec<LinkedList<char>>,
+    source_stack_index: usize,
+    dest_stack_index: usize,
+    move_count: usize,
+) {
+    let mut move_count = move_count;
+
+    let mut popped_crates_list: LinkedList<char> = LinkedList::new();
+
+    while move_count != 0 {
+        let popped_crate = stacks_vector
+            .get_mut(source_stack_index - 1)
+            .unwrap()
+            .pop_back()
+            .unwrap();
+        popped_crates_list.push_front(popped_crate);
+        move_count -= 1;
+    }
+
+    trace!("Popped Crates List: {:?}", popped_crates_list);
+
+    // Add crates to new stack in such a way that their order is preserved
+    // We will pop from the front of the popped_crates_list to push to the destination stack
+
+    while !popped_crates_list.is_empty() {
+        let new_crate_to_push = popped_crates_list.pop_front().unwrap();
+
+        stacks_vector
+            .get_mut(dest_stack_index - 1)
+            .unwrap()
+            .push_back(new_crate_to_push);
     }
 }
 

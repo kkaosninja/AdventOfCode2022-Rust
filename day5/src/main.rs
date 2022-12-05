@@ -40,14 +40,22 @@ fn main() {
         stacks_vector.push(linked_list_stack);
     }
 
+    // For Part 2
+    let mut part2_stacks_vector: Vec<LinkedList<char>> = vec![];
+    for _ in 0..stacks_count {
+        let linked_list_stack: LinkedList<char> = LinkedList::new();
+        part2_stacks_vector.push(linked_list_stack);
+    }
+
     debug!(
         "No. of LinkedList stacks pushed into Vector: {}",
         stacks_vector.len()
     );
 
     utils::insert_crates_into_stacks(INPUT_FILENAME, &mut stacks_vector);
+    utils::insert_crates_into_stacks(INPUT_FILENAME, &mut part2_stacks_vector);
 
-    debug!("Initial state of stacks: {:?}", stacks_vector);
+    trace!("Initial state of stacks: {:?}", stacks_vector);
 
     // We have processed the input and have the data about the initial state of the stacks ! Now time to process the move procedures
 
@@ -79,17 +87,39 @@ fn main() {
                 dest_stack_index,
                 move_count,
             );
+
+            if move_count == 1 {
+                utils::move_crates(
+                    &mut part2_stacks_vector,
+                    source_stack_index,
+                    dest_stack_index,
+                    move_count,
+                );
+            } else {
+                utils::move_crates_part2(
+                    &mut part2_stacks_vector,
+                    source_stack_index,
+                    dest_stack_index,
+                    move_count,
+                );
+            }
         } else {
             panic!("Could not read input file lines!");
         }
     }
 
-    debug!("Final state of stacks:\n {:?}", stacks_vector);
-
-    // Prepare the answer stirng by getting the top crate in all stacks
+    // Prepare the answer string by getting the top crate in all stacks
     let mut top_crates_string = String::new();
     for stack in stacks_vector {
         top_crates_string.push(stack.back().unwrap().clone());
     }
+
+    // Prepare the answer string for Part 2 by getting the top crate in all stacks
+    let mut part2_top_crates_string = String::new();
+    for stack in part2_stacks_vector {
+        part2_top_crates_string.push(stack.back().unwrap().clone());
+    }
+
     println!("Part 1 | After the rearrangement procedure completes, what crate ends up on top of each stack?\nAnswer: {}",top_crates_string);
+    println!("Part 2 | After the rearrangement procedure completes, what crate ends up on top of each stack?\nAnswer: {}",part2_top_crates_string);
 }
