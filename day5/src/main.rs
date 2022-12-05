@@ -2,7 +2,6 @@ use std::{
     collections::LinkedList,
     fs::File,
     io::{BufRead, BufReader},
-    usize,
 };
 
 use log::{debug, trace};
