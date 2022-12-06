@@ -5,9 +5,7 @@ use std::{
 };
 
 mod game_types;
-use game_types::{GameMove, GameResult};
-
-use crate::game_types::PointSystem;
+use game_types::{GameMove, GameResult, PointSystem};
 
 fn main() {
     //Init logger
@@ -72,7 +70,6 @@ fn main() {
 
     println!("Part 1 Solution aka Total Score: {}", total_score_part1);
     println!("Part 2 Solution aka Total Score: {}", total_score_part2);
-
 }
 
 fn interpret_move(coded_move: &str) -> GameMove {
