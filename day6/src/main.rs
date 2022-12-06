@@ -5,7 +5,7 @@ use std::{
 
 use log::{debug, trace};
 
-const INPUT_FILENAME: &str = "puzzle.txt";
+const INPUT_FILENAME: &str = "example.txt";
 
 fn main() {
     env_logger::init();
@@ -14,19 +14,21 @@ fn main() {
 
     let input_string = read_to_string(INPUT_FILENAME).expect("Unable to read input file!");
 
-    // To solve this problem, we need a moving window of size 4. A queue data structure would be useful
+    // To solve this problem, we need a moving window of size 4 or 14. A queue data structure would be useful
     // Let's use a VecDeque for this from std::Collections
     // push_back() to enqueue. pop_front() to dequeue
-
-    // Let's go through the string
 
     trace!("Input String => {}", input_string);
 
     debug!("Starting Part 1 Solution code now");
 
-    // Pass window size of 4 to the method.
-    // Window size represents the no. of distinct characters present in a row which denote the start of an appropriate marker
+    //NOTE: Due to similarity in the solution algorithm, we can use the same function to
+    // get the answers for both parts 1 and 2. The only variable being the size of the "window"
+
+    // Window size represents the no. of distinct characters present in a contiguous sequence which denote the start of an appropriate marker
     // For part 1, the marker is start-of-packet. For part 2, it's start-of-message
+
+    // For Part 1, pass window size of 4 to the method .
     let start_of_packet_marker = get_marker_index(&input_string, 4);
 
     println!(
@@ -36,7 +38,7 @@ fn main() {
 
     debug!("Starting Part 2 Solution code now");
 
-    // Pass window size of 14 to the method.
+    // For part 2, pass window size of 14 to the method
     let start_of_message_marker = get_marker_index(&input_string, 14);
 
     println!(
@@ -69,8 +71,9 @@ fn get_marker_index(input_string: &String, window_size: i32) -> i32 {
         // Only dequeue if packet window size is greater than window_size
         if (packet_window.len() as i32) > window_size {
             trace!(
-                "Queue: {:?} | Queue Size > 14. De-queueing now.",
-                packet_window
+                "Queue: {:?} | Queue Size > {}. De-queueing now.",
+                packet_window,
+                window_size
             );
             let dequeued_char = packet_window.pop_front().unwrap();
             trace!("De-queued char {} from the queue", dequeued_char);
