@@ -18,7 +18,7 @@ fn main() {
     // Let's use a VecDeque for this from std::Collections
     // push_back() to enqueue. pop_front() to dequeue
 
-    let mut packet_window: VecDeque<char> = VecDeque::with_capacity(4);
+    let mut packet_window: VecDeque<char> = VecDeque::with_capacity(5);
 
     //Set marker to minimum possible value. We will update
     let mut start_of_packet_marker: i32 = 0;
@@ -65,7 +65,59 @@ fn main() {
         }
     }
 
-    println!("Part 1 | Start of packet marker: {}", start_of_packet_marker);
+    println!(
+        "Part 1 | Start of packet marker: {}",
+        start_of_packet_marker
+    );
+
+    debug!("Starting Part 2 Solution code now");
+
+    let mut start_of_message_marker = 0;
+
+    // Window size 15 this time.
+    let mut packet_window: VecDeque<char> = VecDeque::with_capacity(15);
+    let mut input_char_indices = input_string.char_indices();
+
+    while let Some((char_index, packet_char)) = input_char_indices.next() {
+        debug!("Current Packet Window Contents: {:?}", packet_window);
+        trace!("Current char: {}", packet_char);
+
+        //Move the window forward
+        //Also handle scenario where window is not yet full
+
+        //Add new character to window
+        trace!("Adding char {} to the window", packet_char);
+        packet_window.push_back(packet_char);
+
+        // Only dequeue if packet window size is greater than 14
+        if packet_window.len() > 14 {
+            trace!(
+                "Queue: {:?} | Queue Size > 14. De-queueing now.",
+                packet_window
+            );
+            let dequeued_char = packet_window.pop_front().unwrap();
+            trace!("De-queued char {} from the queue", dequeued_char);
+        }
+
+        // Skip until the 14th character
+        if char_index < 14 {
+            continue;
+        }
+
+        //  Check if all characters in the window are unique
+        if all_chars_are_unique(&packet_window) {
+            // We found the start of the start-of-packet marker
+            // Set the value and break the loop
+
+            start_of_message_marker = (char_index + 1) as i32;
+            break;
+        }
+    }
+
+    println!(
+        "Part 2 | Start of message marker: {}",
+        start_of_message_marker
+    );
 }
 
 fn all_chars_are_unique(packet_window: &VecDeque<char>) -> bool {
