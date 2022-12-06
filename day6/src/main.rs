@@ -29,7 +29,7 @@ fn main() {
     // For part 1, the marker is start-of-packet. For part 2, it's start-of-message
 
     // For Part 1, pass window size of 4 to the method .
-    let start_of_packet_marker = get_marker_index(&input_string, 4);
+    let start_of_packet_marker = get_marker_index::<4>(&input_string);
 
     println!(
         "Part 1 | How many characters need to be processed before the first start-of-packet marker is detected?\nAnswer: {}",
@@ -39,7 +39,7 @@ fn main() {
     debug!("Starting Part 2 Solution code now");
 
     // For part 2, pass window size of 14 to the method
-    let start_of_message_marker = get_marker_index(&input_string, 14);
+    let start_of_message_marker = get_marker_index::<14>(&input_string);
 
     println!(
         "Part 2 | How many characters need to be processed before the first start-of-message marker is detected?\nAnswer: {}",
@@ -47,12 +47,12 @@ fn main() {
     );
 }
 
-fn get_marker_index(input_string: &String, window_size: i32) -> i32 {
+fn get_marker_index<const WINDOW_SIZE: i32>(input_string: &String) -> i32 {
     // This is the value we will return.
     let mut marker_index: i32 = 0;
 
     // This is the queue we will be using that will represent the moving window
-    let mut packet_window: VecDeque<char> = VecDeque::with_capacity((window_size + 1) as usize);
+    let mut packet_window: VecDeque<char> = VecDeque::with_capacity((WINDOW_SIZE + 1) as usize);
 
     // Time to process the input!
 
@@ -69,11 +69,11 @@ fn get_marker_index(input_string: &String, window_size: i32) -> i32 {
         packet_window.push_back(packet_char);
 
         // Only dequeue if packet window size is greater than window_size
-        if (packet_window.len() as i32) > window_size {
+        if (packet_window.len() as i32) > WINDOW_SIZE {
             trace!(
                 "Queue: {:?} | Queue Size > {}. De-queueing now.",
                 packet_window,
-                window_size
+                WINDOW_SIZE
             );
             let dequeued_char = packet_window.pop_front().unwrap();
             trace!("De-queued char {} from the queue", dequeued_char);
@@ -81,7 +81,7 @@ fn get_marker_index(input_string: &String, window_size: i32) -> i32 {
 
         // Packet window still isn't full. So we cannot check for distinct characters yet.
         // Therefore go to next iteration
-        if (char_index as i32) < window_size {
+        if (char_index as i32) < WINDOW_SIZE {
             continue;
         }
 
