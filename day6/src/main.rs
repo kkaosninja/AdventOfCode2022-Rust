@@ -5,7 +5,7 @@ use std::{
 
 use log::{debug, trace};
 
-const INPUT_FILENAME: &str = "example.txt";
+const INPUT_FILENAME: &str = "puzzle.txt";
 
 fn main() {
     env_logger::init();
@@ -18,66 +18,43 @@ fn main() {
     // Let's use a VecDeque for this from std::Collections
     // push_back() to enqueue. pop_front() to dequeue
 
-    let mut packet_window: VecDeque<char> = VecDeque::with_capacity(5);
-
-    //Set marker to minimum possible value. We will update
-    let mut start_of_packet_marker: i32 = 0;
-
-    // The Window is full
     // Let's go through the string
 
     trace!("Input String => {}", input_string);
-    let mut input_char_indices = input_string.char_indices();
 
-    while let Some((char_index, packet_char)) = input_char_indices.next() {
-        debug!("Current Packet Window Contents: {:?}", packet_window);
-        trace!("Current char: {}", packet_char);
+    debug!("Starting Part 1 Solution code now");
 
-        //Move the window forward
-        //Also handle scenario where window is not yet full
-
-        //Add new character to window
-        trace!("Adding char {} to the window", packet_char);
-        packet_window.push_back(packet_char);
-
-        // Only dequeue if packet window size is greater than 4
-        if packet_window.len() > 4 {
-            trace!(
-                "Queue: {:?} | Queue Size > 4. De-queueing now.",
-                packet_window
-            );
-            let dequeued_char = packet_window.pop_front().unwrap();
-            trace!("De-queued char {} from the queue", dequeued_char);
-        }
-
-        // Skip until the 4th character
-        if char_index < 4 {
-            continue;
-        }
-
-        //  Check if all characters in the window are unique
-        if all_chars_are_unique(&packet_window) {
-            // We found the start of the start-of-packet marker
-            // Set the value and break the loop
-
-            start_of_packet_marker = (char_index + 1) as i32;
-            break;
-        }
-    }
+    // Pass window size of 4 to the method.
+    // Window size represents the no. of distinct characters present in a row which denote the start of an appropriate marker
+    // For part 1, the marker is start-of-packet. For part 2, it's start-of-message
+    let start_of_packet_marker = get_marker_index(&input_string, 4);
 
     println!(
-        "Part 1 | Start of packet marker: {}",
+        "Part 1 | How many characters need to be processed before the first start-of-packet marker is detected?\nAnswer: {}",
         start_of_packet_marker
     );
 
     debug!("Starting Part 2 Solution code now");
 
-    let mut start_of_message_marker = 0;
+    // Pass window size of 14 to the method.
+    let start_of_message_marker = get_marker_index(&input_string, 14);
 
-    // Window size 15 this time.
-    let mut packet_window: VecDeque<char> = VecDeque::with_capacity(15);
+    println!(
+        "Part 2 | How many characters need to be processed before the first start-of-message marker is detected?\nAnswer: {}",
+        start_of_message_marker
+    );
+}
+
+fn get_marker_index(input_string: &String, window_size: i32) -> i32 {
+    // This is the value we will return.
+    let mut marker_index: i32 = 0;
+
+    // This is the queue we will be using that will represent the moving window
+    let mut packet_window: VecDeque<char> = VecDeque::with_capacity((window_size + 1) as usize);
+
+    // Time to process the input!
+
     let mut input_char_indices = input_string.char_indices();
-
     while let Some((char_index, packet_char)) = input_char_indices.next() {
         debug!("Current Packet Window Contents: {:?}", packet_window);
         trace!("Current char: {}", packet_char);
@@ -89,8 +66,8 @@ fn main() {
         trace!("Adding char {} to the window", packet_char);
         packet_window.push_back(packet_char);
 
-        // Only dequeue if packet window size is greater than 14
-        if packet_window.len() > 14 {
+        // Only dequeue if packet window size is greater than window_size
+        if (packet_window.len() as i32) > window_size {
             trace!(
                 "Queue: {:?} | Queue Size > 14. De-queueing now.",
                 packet_window
@@ -99,25 +76,22 @@ fn main() {
             trace!("De-queued char {} from the queue", dequeued_char);
         }
 
-        // Skip until the 14th character
-        if char_index < 14 {
+        // Packet window still isn't full. So we cannot check for distinct characters yet.
+        // Therefore go to next iteration
+        if (char_index as i32) < window_size {
             continue;
         }
 
         //  Check if all characters in the window are unique
         if all_chars_are_unique(&packet_window) {
-            // We found the start of the start-of-packet marker
+            // We found the start of the marker index
             // Set the value and break the loop
-
-            start_of_message_marker = (char_index + 1) as i32;
+            marker_index = (char_index + 1) as i32;
             break;
         }
-    }
+    } //while loop
 
-    println!(
-        "Part 2 | Start of message marker: {}",
-        start_of_message_marker
-    );
+    return marker_index;
 }
 
 fn all_chars_are_unique(packet_window: &VecDeque<char>) -> bool {
