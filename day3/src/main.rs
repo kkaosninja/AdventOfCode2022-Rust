@@ -14,8 +14,7 @@ fn main() {
     trace!("Starting Application!");
     debug!("Debug test!");
 
-    let input_file_handle = File::open("input.txt").expect("Could not open input file!");
-    let input_file_lines = BufReader::new(input_file_handle).lines();
+    let input_file_lines = BufReader::new(File::open("input.txt").expect("Could not open input file!")).lines();
 
     let mut sum_of_priorities = 0;
 

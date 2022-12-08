@@ -10,8 +10,8 @@ fn main() {
     // Example:- If we want the number of calories carried by Elf 5, we will get elf_total_calories[4]
     let mut elf_total_calories: Vec<i32> = vec![];
     // Input file reader
-    let input_file_handle = File::open("input.txt").expect("Failed to read input file");
-    let input_file_lines = BufReader::new(input_file_handle).lines();
+    let input_file_lines =
+        BufReader::new(File::open("input.txt").expect("Failed to read input file")).lines();
 
     let mut current_elf_calorie_count = 0;
 

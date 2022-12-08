@@ -9,7 +9,6 @@ pub enum GameResult {
     Win,
     Loss,
     Draw,
-    Wtf,
 }
 
 impl PointSystem for GameResult {
@@ -18,7 +17,6 @@ impl PointSystem for GameResult {
             Self::Win => return 6,
             Self::Loss => return 0,
             Self::Draw => return 3,
-            Self::Wtf => return -1,
         }
     }
 }
@@ -28,7 +26,6 @@ pub enum GameMove {
     Rock,
     Paper,
     Scissors,
-    Spock,
 }
 
 impl PointSystem for GameMove {
@@ -37,7 +34,6 @@ impl PointSystem for GameMove {
             Self::Rock => return 1,
             Self::Paper => return 2,
             Self::Scissors => return 3,
-            Self::Spock => return 0,
         }
     }
 }

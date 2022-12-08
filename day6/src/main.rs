@@ -75,8 +75,12 @@ fn get_marker_index<const WINDOW_SIZE: i32>(input_string: &String) -> i32 {
                 packet_window,
                 WINDOW_SIZE
             );
-            let dequeued_char = packet_window.pop_front().unwrap();
-            trace!("De-queued char {} from the queue", dequeued_char);
+            
+            if let Some(dequeued_char) = packet_window.pop_front() {
+                trace!("De-queued char {} from the queue", dequeued_char);
+            } else {
+                panic!("Failed to deque char from packet window! Exiting.")
+            }
         }
 
         // Packet window still isn't full. So we cannot check for distinct characters yet.
