@@ -42,9 +42,11 @@ fn main() {
     which the calling function will consume, and decide what to do next
 
     2) In case of a "cd subdir_name", we get a reference to this subdir's instance from our current dir's data structure
-        and then call process_input() recursively again.
+        and then call process_input() recursively again. In addition to the subdir reference, we also pass the next line number
+        to process when making the recursive call
 
-    In case of (2) we make a
+        Once it returns(as a result of it encountering a "cd .." line), we will use the returned line number
+        and continue processing the input lines
     */
 
     /*
@@ -57,8 +59,8 @@ fn main() {
        1) Every value can only have one owner at any given time
        2) Value dropped as soon as it goes out of scope
 
-       We can pass around multiple references to a single dir data structure, without getting compile errors.
-       Especially mutable references. At any given time, for safe programming, there should always be a single holder.
+       We cannot pass around multiple mutable references to a single dir data structure, without getting compile errors.
+        At any given time, for safe programming, there should always be a single holder.
        Implemented by PuzzleDir
        For this reason we will need a container type who will hold this value for us.
        1) std::rc::Rc - Reference Counted smart pointer - https://doc.rust-lang.org/book/ch15-04-rc.html
@@ -68,11 +70,11 @@ fn main() {
        2) The Rc itself will contain an instance of RefCell, which will in turn hold an instance of PuzzleDir
            https://doc.rust-lang.org/book/ch15-05-interior-mutability.html
 
-       By calling borrow() and borrow(), we can get immutable and mutable(only when necessary) references to the same instances of PuzzleDir
+       By calling borrow() and borrow_mut() on RefCell, we can get immutable and mutable(only when necessary) references to the same instances of PuzzleDir
 
-       The checking for ownership rules this happens at run-time. So its absolutely possible to cause a panic if we misuse this.
+       The checking for ownership rules for this happens at run-time. So its absolutely possible to cause a panic if we misuse this.
 
-       By combining an Rc and RefCell, we can create a safetree data structure that is safe(at least at compile time) to work with.
+       By combining an Rc and RefCell, we can create a tree data structure that is safe(at least at compile time) to work with.
     */
 
     // First line of input is always "cd /". We start at the root dir
