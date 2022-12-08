@@ -1,5 +1,5 @@
 use log::{debug, trace, warn};
-use std::{cell::RefCell, collections::HashMap, fs::read_to_string, rc::Rc, str::FromStr};
+use std::{cell::RefCell, fs::read_to_string, rc::Rc, str::FromStr};
 
 mod utils;
 use utils::{get_line_type, InputLineType, PuzzleDir, PuzzleFile};
@@ -79,34 +79,54 @@ fn main() {
     let root_dir_ref = Rc::new(RefCell::new(PuzzleDir::new("/")));
 
     // Start at second line aka 1
-    // Use clone() to increment pointer count. Otherwise we cannot use it later as moved the only available pointer
+    // Use clone() to increment pointer count. Otherwise we cannot use it later as we "moved" the only available pointer
     debug!("Being Processing Input!");
     let final_line_number = process_input(&input_file_lines, 1, root_dir_ref.clone());
     debug!("Line number returned: {}", final_line_number);
 
-    debug!(
-        "Total size of root dir {}",
-        root_dir_ref.clone().borrow().get_size()
-    );
+    let root_dir_size = root_dir_ref.clone().borrow().get_size();
+    debug!("Total size of root dir {}", root_dir_size);
 
     debug!("Now adding all dir sizes to a Vector!");
 
-    // Map that maps dirs to their sizes. We will need to solve the Part 1 question
+    // Vector containing all dir sizes
     let mut dir_size_vec: Vec<usize> = Vec::new();
 
     get_dir_sizes(&mut dir_size_vec, root_dir_ref.clone());
     trace!("{:?}", dir_size_vec);
 
-    let mut part1_answer = 0;
+    // Solve for Part 1
+    // Double de-structuring in filter() - https://doc.rust-lang.org/core/iter/trait.Iterator.html#examples-14
+    let part1_answer: usize = dir_size_vec
+        .iter()
+        .filter(|&&x| x <= 100_000 as usize)
+        .sum();
 
-    for dir_size in dir_size_vec {
-        if dir_size < 100_000 {
-            part1_answer += dir_size;
-        }
-    }
+    // Solve for Part 2
+    let free_space_available = 70_000_000 - root_dir_size;
+    debug!("Current free space available is {}", free_space_available);
+
+    // We need 30_000_000 for the update. How much more do we need to free?
+    let space_to_be_freed = 30_000_000 - free_space_available;
+
+    // Find size of smallest directory to be deleted
+    let mut part2_answer: usize = 0;
+    dir_size_vec
+        .iter()
+        .filter(|&&x| x > space_to_be_freed)
+        .for_each(|&dir_size| {
+            if (part2_answer == 0) | (dir_size < part2_answer) {
+                part2_answer = dir_size;
+            }
+        });
+
     println!(
-        "Part 1 | What is the sum of the total sizes of those directories?\nAnswer: {}",
+        "Part 1 | What is the sum of the total sizes of those directories with a total size of at most 100000?\nAnswer: {}",
         part1_answer
+    );
+    println!(
+        "Part 2 | What is the total size of the smallest directory to be deleted to create 30_000_000 of free space?\nAnswer: {}",
+        part2_answer
     );
 }
 
@@ -269,8 +289,6 @@ fn get_dir_sizes(dir_size_vec: &mut Vec<usize>, current_dir_ref: Rc<RefCell<Puzz
         current_dir_size
     );
 
-    //Sanity check
-
     dir_size_vec.push(current_dir_size);
 
     // Condition to terminate recursion
@@ -287,8 +305,9 @@ fn get_dir_sizes(dir_size_vec: &mut Vec<usize>, current_dir_ref: Rc<RefCell<Puzz
             .expect("Could not fetch subdir")
             .clone();
         debug!(
-            "Calling get_dir_sizes on subdirs of dir {}",
-            current_dir_size
+            "Calling get_dir_sizes on subdir {} of dir {}",
+            sub_dir_ref.borrow().name,
+            current_dir_name
         );
         get_dir_sizes(dir_size_vec, sub_dir_ref);
     }
