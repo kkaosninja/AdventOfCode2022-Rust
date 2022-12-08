@@ -55,7 +55,7 @@ impl PuzzleDir {
         total_size += self
             .sub_dirs
             .iter()
-            .map(|sub_dir| sub_dir.borrow_mut().get_size())
+            .map(|sub_dir| sub_dir.borrow().get_size())
             .sum::<usize>();
 
         return total_size;
