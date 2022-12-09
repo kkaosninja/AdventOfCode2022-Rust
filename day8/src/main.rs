@@ -40,10 +40,14 @@ fn main() {
     trace!("Tree Visibility Matrix: {:?}", visibility_bool_matrix);
 
     /* Let's call our algorithm tallest-tree-so-far.
-        For each tree in a row/column, in whatever orientation,
+        For each tree in a row/column, in all orientations aka
+        left-to-right + right-to-left and top-to-bottom + bottom-to-top
         if its height is the tallest we've seen so far, we set its visibility to true.
-        We stop traversing the row, if we come across a height that is the maximum height for the row
+        We stop traversing if we come across a height that is the maximum height for the row
         Obviously the first occurance of  a tree with this max height will be visible, but not anything after that
+
+        So overall, for each tree, we do four passes. If its visibility gets set to true even in one pass,
+        it means its visible from somewhere, which is enough
 
         This is implemented in set_visibility_row_wise() and set_visibility_column_wise()
         which we will call on each row and column respectively
@@ -80,8 +84,44 @@ fn main() {
             }
         }
     }
-    println!("Part 1 | How many trees are visible from outside the grid?\nAnswer: {}",visible_trees);
+    println!(
+        "Part 1 | How many trees are visible from outside the grid?\nAnswer: {}",
+        visible_trees
+    );
 
+    // Solve for Part 2
+
+    /*
+    We are going for a brute-force solution here
+    We can do two optimizations -
+    1) Don't calculate scenic scores for edge trees - as it will be zero
+    2) Don't calculate scenic scores for interior trees that are not visible - not likely to have a very high score.
+
+    Visible trees will have higher scenic scores than invisible trees
+
+    */
+
+    // let test_score = compute_scenic_score(&input_data_matrix, &visibility_bool_matrix, 3, 2);
+    // debug!("Test score for tree at 3,2 is {}",test_score);
+
+    let mut max_scenic_score = 0;
+    for row_index in 0..visibility_bool_matrix.len() {
+        for column_index in 0..visibility_bool_matrix[row_index].len() {
+            let current_scenic_score = compute_scenic_score(
+                &input_data_matrix,
+                &visibility_bool_matrix,
+                row_index,
+                column_index,
+            );
+            if current_scenic_score > max_scenic_score {
+                max_scenic_score = current_scenic_score;
+            }
+        }
+    }
+    println!(
+        "Part 2 | What is the highest scenic score possible for any tree?\nAnswer: {}",
+        max_scenic_score
+    );
 }
 
 fn process_input(input_data_array: &mut Vec<Vec<usize>>, input_file_lines: Vec<String>) {
@@ -306,4 +346,113 @@ fn set_visibility_column_wise(
             break;
         }
     } //for loop
+}
+
+fn compute_scenic_score(
+    input_data_matrix: &Vec<Vec<usize>>,
+    visibility_bool_matrix: &Vec<Vec<bool>>,
+    row_index: usize,
+    column_index: usize,
+) -> usize {
+    let mut scenic_score_for_this_tree: usize = 1;
+
+    // If this is an edge tree, then its scenic score is zero. Return immediately
+    if (row_index == 0)
+        | (column_index == 0)
+        | (row_index == input_data_matrix.len() - 1)
+        | (column_index == input_data_matrix[0].len() - 1)
+    {
+        return 0;
+    }
+
+    trace!(
+        "Calculating scenic score for row {} col {}",
+        row_index,
+        column_index
+    );
+
+    //If this tree is not "visible" then we don't bother calculating
+    if !visibility_bool_matrix[row_index][column_index] {
+        return scenic_score_for_this_tree;
+    }
+
+    let scoring_tree_height = input_data_matrix[row_index][column_index];
+
+    // Part 1 - Row-wise scenic score
+
+    // Part 1-1 - Check row-wise visibility to the left of the tree
+    let mut visible_trees_left = 0;
+
+    for current_column_index in (0..=(column_index - 1)).rev() {
+        // If we got to here, then the tree in this column is visible
+        visible_trees_left += 1;
+
+        // This is the msot we can see. No need to go further
+        if scoring_tree_height <= input_data_matrix[row_index][current_column_index] {
+            break;
+        }
+    }
+    trace!(
+        "Visible trees to left for tree at row {} col {} is {}",
+        row_index,
+        column_index,
+        visible_trees_left
+    );
+
+    // Update scenic score
+    scenic_score_for_this_tree *= visible_trees_left;
+
+    // Part 1-2 - Check row-wise visibility to the right of the tree
+    let mut visible_trees_right = 0;
+    for current_column_index in (column_index + 1)..input_data_matrix[0].len() {
+        visible_trees_right += 1;
+
+        if scoring_tree_height <= input_data_matrix[row_index][current_column_index] {
+            break;
+        }
+    }
+    trace!(
+        "Visible trees to right for tree at row {} col {} is {}",
+        row_index,
+        column_index,
+        visible_trees_right
+    );
+    scenic_score_for_this_tree *= visible_trees_right;
+
+    // Part 2 - Column-wise scenic score
+
+    // Part 2-1 - Check column-wise visibility above current tree
+    let mut visible_trees_top = 0;
+    for current_row_index in (0..=(row_index - 1)).rev() {
+        visible_trees_top += 1;
+
+        if scoring_tree_height <= input_data_matrix[current_row_index][column_index] {
+            break;
+        }
+    }
+    trace!(
+        "Visible trees to top for tree at row {} col {} is {}",
+        row_index,
+        column_index,
+        visible_trees_top
+    );
+    scenic_score_for_this_tree *= visible_trees_top;
+
+    // Part 2-2 - Check column-wise visibility below current tree
+    let mut visible_trees_below = 0;
+    for current_row_index in (row_index + 1)..input_data_matrix.len() {
+        visible_trees_below += 1;
+        if scoring_tree_height <= input_data_matrix[current_row_index][column_index] {
+            break;
+        }
+    }
+    trace!(
+        "Visible trees to bottom for tree at row {} col {} is {}",
+        row_index,
+        column_index,
+        visible_trees_below
+    );
+    scenic_score_for_this_tree *= visible_trees_below;
+
+    return scenic_score_for_this_tree;
 }
