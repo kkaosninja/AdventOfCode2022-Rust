@@ -128,6 +128,7 @@ fn process_move(
             // If the "current head" is already touching its own head. Then it does not need to move itself.
             // And if the "current head" does not move, neither do the tails that come after it
 
+            // Use short-circuit AND here to ensure result of (current_tail_number-1) is always >= 1
             if (current_tail_number > 1)
                 && (is_tail_touching_head(rope_data, current_tail_number - 1))
             {
@@ -218,7 +219,7 @@ fn is_tail_touching_head(rope_data: &Vec<[i32; 2]>, current_tail_number: usize) 
     let diff_y_abs =
         rope_data[current_tail_number][1].abs_diff(rope_data[current_tail_number - 1][1]);
 
-    if (diff_x_abs <= 1) && (diff_y_abs <= 1) {
+    if (diff_x_abs <= 1) & (diff_y_abs <= 1) {
         return true;
     }
 
@@ -240,7 +241,7 @@ fn make_tail_touch_head(
     // Let' handle the most complex case first
     // A Diagonal move is necesary if head and tail are in different x and y values
     if (rope_data[tail_number - 1][0] != rope_data[tail_number][0])
-        && (rope_data[tail_number - 1][1] != rope_data[tail_number][1])
+        & (rope_data[tail_number - 1][1] != rope_data[tail_number][1])
     {
         trace!("Diagonal move necessary!");
         //Decide in which direction to move.
